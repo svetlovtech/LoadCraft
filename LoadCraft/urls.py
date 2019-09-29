@@ -13,11 +13,13 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.contrib.auth.models import User
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework import serializers, viewsets, routers
 
 urlpatterns = [
     path('grappelli/', include('grappelli.urls')),
     path('admin/', admin.site.urls),
-    path('utils_db_postgresql/', include('utils_db_postgresql.urls')),
+    path('api/v1/utils_db_postgresql/', include('utils_db_postgresql.urls')),
 ]
