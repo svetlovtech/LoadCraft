@@ -40,6 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'utils_db_postgresql',
+    'grappelli',
 ]
 
 MIDDLEWARE = [
