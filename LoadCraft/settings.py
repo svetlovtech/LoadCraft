@@ -12,6 +12,16 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 import sys
+import logging
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="[%(asctime)s] %(levelname)-12s|process:%(process)-5s|thread:%(thread)-5s|funcName:%(funcName)s|message:%(message)s",
+    handlers=[
+        # logging.FileHandler('fileName.log'),
+        logging.StreamHandler()
+    ])
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -116,6 +126,7 @@ REST_FRAMEWORK = {
     ],
     # 'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
 }
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
