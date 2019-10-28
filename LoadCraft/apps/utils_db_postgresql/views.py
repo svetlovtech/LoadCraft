@@ -150,7 +150,7 @@ class PostgresqlSettingsView(viewsets.ModelViewSet):
 
     @swagger_auto_schema(methods=['get'], responses={200: PgStatStatementsLineSerializer(many=True), 500: 'There was a problem retrieving data from the database'})
     @action(methods=['GET'], detail=True)
-    def get_all_statistic(self, request, pk: PostgresqlSettings):
+    def pg_stat_statements_collect_all(self, request, pk: PostgresqlSettings):
         """This method allows you to get all pg_stat_statements statistic."""
         logging.info(
             f'Getting pg_stat_statements statistic from database {pk} started...')
@@ -172,7 +172,7 @@ class PostgresqlSettingsView(viewsets.ModelViewSet):
             pg_stat_statements_lines: List[PgStatStatementsLine] = []
             for row in cursor.fetchall():
                 logging.info(f'row {type(row)} = {row}')
-                pg_stat_statements_line = PgStatStatementsLine(userid=row[0], dbid=row[1], queryid=row[2], query=row[3], 
+                pg_stat_statements_line = PgStatStatementsLine(userid=row[0], dbid=row[1], queryid=row[2], query=row[3],
                                                                calls=row[4],
                                                                total_time=row[5], min_time=row[6],
                                                                max_time=row[7], mean_time=row[8], stddev_time=row[9],
@@ -207,10 +207,45 @@ class PostgresqlSettingsView(viewsets.ModelViewSet):
                 f'Getting pg_stat_statements statistic from database {pk} completed')
             return response
 
+    @swagger_auto_schema(methods=['get'], responses={204: 'Resetting pg_stat_statements for {pk} completed', 504: 'There was a problem to reset pg_stat_statements'})
+    @action(methods=['GET'], detail=True)
+    def pg_stat_statements_reset(self, request, pk: PostgresqlSettings):
+        """This method allows you to reset pg_stat_statements statistic"""
+        logging.info(
+            f'Resetting pg_stat_statements for {pk} started...')
+        response = None
+        try:
+            postgresql_setting: PostgresqlSettings = PostgresqlSettings.objects.get(
+                pk=pk)
+            logging.info(
+                f'postgresql_setting{type(postgresql_setting)} = {postgresql_setting}')
+            connection: psycopg2.extensions.connection = psycopg2.connect(user=postgresql_setting.username,
+                                                                          password=postgresql_setting.password,
+                                                                          host=postgresql_setting.host,
+                                                                          port=postgresql_setting.port,
+                                                                          database=postgresql_setting.dbname)
+            logging.info(f'connection{type(connection)} = {connection}')
+            cursor = connection.cursor()
+            cursor.execute("SELECT public.pg_stat_statements_reset();")
+            response = HttpResponse()
+            response.status_code = 204
+        except (Exception, psycopg2.Error) as error:
+            error_message = f'Error while connecting to PostgreSQL: {error}'
+            response = HttpResponse(error_message)
+            response.status_code = 503
+            logging.error(error_message)
+        finally:
+            try:
+                if(connection):
+                    cursor.close()
+                    connection.close()
+            except (UnboundLocalError) as error:
+                logging.warning('Database connection already closed')
+            logging.info(f'Resetting pg_stat_statements for {pk} completed')
+            return response
 
 
-
-# def pg_stat_statements_reset(request):
+# def (request):
 #     return HttpResponse('')
 
 
